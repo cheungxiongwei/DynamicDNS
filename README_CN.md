@@ -17,6 +17,19 @@ time_out：自动更新时间，单位秒
 }
 ```
 
+### 创建 windows 服务
+创建服务
+```bat
+sc.exe create DynamicDNS binPath= "\"%~dp0DynamicDNS.exe\"" start= auto DisplayName= "DynamicDNS"
+```
+设置描述
+```bat
+sc.exe description DynamicDNS "DynamicDNS 动态域名解析服务"
+```
+删除服务
+```
+sc.exe delete DynamicDNS
+```
 
 ### 如何获取本机 IP 地址 ？
 

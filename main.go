@@ -17,12 +17,16 @@ type CMDParam struct {
 
 var cmd CMDParam
 
+var ConfigFile string
+
 func init() {
 	// set cmd line param
 	flag.StringVar(&cmd.Host, "host", "", "host")
 	flag.StringVar(&cmd.Domain, "domain", "", "domain_name")
 	flag.StringVar(&cmd.Password, "password", "", "ddns_password")
 	flag.IntVar(&cmd.TimeOut, "timeout", 15*60, "auto update time.default value 15 min")
+
+	flag.StringVar(&ConfigFile, "c", "", "config file")
 }
 
 func main() {
@@ -32,6 +36,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	println("ddns runing.")
+
 	if len(cmd.Password) > 0 && len(cmd.Domain) > 0 && len(cmd.Host) > 0 {
 		ticker := time.NewTicker(time.Duration(cmd.TimeOut) * time.Second)
 		defer ticker.Stop()
@@ -40,7 +46,12 @@ func main() {
 			updateRemoteIp(cmd)
 		}
 	} else {
-		file, _ := ioutil.ReadFile("config.json")
+
+		if len(ConfigFile) == 0 {
+			ConfigFile = "config.json"
+		}
+
+		file, _ := ioutil.ReadFile(ConfigFile)
 
 		err := json.Unmarshal([]byte(file), &cmd)
 		if err != nil {
@@ -52,7 +63,10 @@ func main() {
 		defer ticker.Stop()
 
 		for range ticker.C {
-			updateRemoteIp(cmd)
+			UpdateTencentIp(cmd)
+			// updateRemoteIp(cmd)
+			// ipv4, _ := GetLocalHostAddress()
+			// println(ipv4)
 		}
 	}
 }

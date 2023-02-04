@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-func updateRemoteIp(param CMDParam) {
+// 获取本机公网 ipv4 地址
+func GetLocalHostAddress() (string, error) {
 	var defaultTransport http.RoundTripper = &http.Transport{
 		Proxy: nil,
 		DialContext: (&net.Dialer{
@@ -23,11 +24,10 @@ func updateRemoteIp(param CMDParam) {
 	}
 
 	client := &http.Client{Transport: defaultTransport}
-
-	// [1] get local ip adress
 	resp, err := client.Get("http://ip4only.me/api/")
 	if err != nil {
 		log.Println(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 
@@ -37,7 +37,16 @@ func updateRemoteIp(param CMDParam) {
 	ip, _ := reader.ReadString(',')
 	ipv4 := ip[0 : len(ip)-1]
 
-	// log.Printf("IP address:%s\n", ipv4)
+	return ipv4, nil
+}
+
+func updateRemoteIp(param CMDParam) {
+
+	ipv4, err := GetLocalHostAddress()
+	if err != nil {
+		log.Printf("http get remote ipv4 failed\n")
+		return
+	}
 
 	// [2] set remote dns ip
 	HttpsUpdateUrl := fmt.Sprintf("https://dynamicdns.park-your-domain.com/update?host=%s&domain=%s&password=%s&ip=%s", param.Host, param.Domain, param.Password, ipv4)
